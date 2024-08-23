@@ -249,10 +249,9 @@ class _BoardViewState extends State<BoardView> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                (commentsVisible
+                                                '${commentsVisible
                                                         ? 'Hide Comments'
-                                                        : 'Show Comments') +
-                                                    ' (${commentCount})',
+                                                        : 'Show Comments'} ($commentCount)',
                                                 style: const TextStyle(
                                                   fontSize: 14.0,
                                                   color: Colors.blueAccent,
@@ -293,11 +292,11 @@ class _BoardViewState extends State<BoardView> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showFeatureSuggestionModal(context),
+          backgroundColor: Colors.blueAccent,
           child: const Icon(
             Icons.add,
             color: Colors.white,
           ),
-          backgroundColor: Colors.blueAccent,
         ),
       ),
     );

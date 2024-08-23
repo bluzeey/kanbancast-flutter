@@ -102,20 +102,18 @@ class _CommentsSectionState extends State<CommentsSection> {
         ),
         const SizedBox(height: 8.0),
         ElevatedButton(
-          onPressed: _handleSubmit, // Use the internal submit handler
-          child: const Text('Post'),
+          onPressed: _handleSubmit,
           style: ElevatedButton.styleFrom(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-            primary: Colors.blueAccent, // Button background color
-            onPrimary: Colors.white, // Text color
+            foregroundColor: Colors.white, backgroundColor: Colors.blueAccent, padding:
+                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0), // Text color
             textStyle:
                 const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
             elevation: 5.0, // Shadow effect
-          ),
+          ), // Use the internal submit handler
+          child: const Text('Post'),
         ),
       ],
     );

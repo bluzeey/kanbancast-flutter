@@ -52,7 +52,7 @@ class SuggestionModal extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Suggest a Feature',
                 style: TextStyle(
                   fontSize: 20.0,
@@ -60,7 +60,7 @@ class SuggestionModal extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.close),
+                icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -70,7 +70,7 @@ class SuggestionModal extends StatelessWidget {
             controller: titleController,
             decoration: InputDecoration(
               labelText: 'Title',
-              labelStyle: TextStyle(fontSize: 14.0),
+              labelStyle: const TextStyle(fontSize: 14.0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
@@ -79,14 +79,14 @@ class SuggestionModal extends StatelessWidget {
                 vertical: 8.0, // Minimal vertical padding
               ),
             ),
-            style: TextStyle(fontSize: 14.0),
+            style: const TextStyle(fontSize: 14.0),
           ),
           const SizedBox(height: 16.0),
           TextField(
             controller: descriptionController,
             decoration: InputDecoration(
               labelText: 'Description',
-              labelStyle: TextStyle(fontSize: 14.0),
+              labelStyle: const TextStyle(fontSize: 14.0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
@@ -96,23 +96,21 @@ class SuggestionModal extends StatelessWidget {
               ),
             ),
             maxLines: 3,
-            style: TextStyle(fontSize: 14.0),
+            style: const TextStyle(fontSize: 14.0),
           ),
           const SizedBox(height: 16.0),
           ElevatedButton(
             onPressed: () => handleSubmit(context),
-            child: Text('Submit'),
             style: ElevatedButton.styleFrom(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-              primary: Colors.blueAccent, // Button background color
-              onPrimary: Colors.white, // Text color
+              foregroundColor: Colors.white, backgroundColor: Colors.blueAccent, padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0), // Text color
               textStyle:
                   const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
+            child: const Text('Submit'),
           ),
           const SizedBox(height: 16.0),
         ],
