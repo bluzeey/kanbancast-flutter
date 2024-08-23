@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'service/project_service.dart'; // Import the service
+import 'components/status_buttons.dart'; // Import the new component
+import 'components/upvote_button.dart';
+import 'components/comments_section.dart'; // Import the upvote button component
+import 'components/suggestion_modal.dart'; // Import the suggestion modal component
 
 class BoardView extends StatefulWidget {
   final int projectId;
@@ -24,6 +28,9 @@ class _BoardViewState extends State<BoardView> {
   Map<int, bool> showComments =
       {}; // Track which tasks have their comments visible
   String commentContent = "";
+  final TextEditingController commentController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   @override
   void initState() {
@@ -86,171 +93,212 @@ class _BoardViewState extends State<BoardView> {
     });
   }
 
-  void submitNewComment(int taskId) {
-    // Logic to submit new comment goes here
-    print("Submitting comment for task $taskId: $commentContent");
+  Future<void> voteTask(int taskId) async {
+    try {
+      int newVotes = await projectService.upvoteTask(taskId);
+
+      setState(() {
+        for (var status in statuses) {
+          for (var task in status['tasks']) {
+            if (task['id'] == taskId) {
+              task['votes'] = newVotes;
+              break;
+            }
+          }
+        }
+      });
+    } catch (error) {
+      // Handle any errors that occur during the upvote process
+      print('Failed to upvote task: $error');
+    }
+  }
+
+  void handleUpvoteComment(int commentId) async {
+    try {
+      int newVotes = await projectService.upvoteComment(commentId);
+      setState(() {
+        // Update the specific comment's vote count in your state
+        for (var status in statuses) {
+          for (var task in status['tasks']) {
+            for (var comment in task['comments']) {
+              if (comment['id'] == commentId) {
+                comment['votes'] = newVotes;
+                break;
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      // Handle any errors that occur during the upvote process
+      print('Failed to upvote comment: $error');
+    }
+  }
+
+  Future<void> handleSubmitNewComment(int taskId) async {
+    try {
+      final newComment =
+          await projectService.submitNewComment(taskId, commentContent);
+      setState(() {
+        // Add the new comment to the task's comments list
+        final task =
+            tasksForSelectedTab.firstWhere((task) => task['id'] == taskId);
+        task['comments'].add(newComment);
+        commentContent = ''; // Clear the comment content
+      });
+    } catch (error) {
+      // Handle any errors that occur during the comment submission process
+      print('Failed to submit comment: $error');
+    }
+  }
+
+  void handleNewTaskSubmission(Map<String, dynamic> newTask) {
     setState(() {
-      // Add logic to handle the submission of the new comment
-      commentContent = ""; // Clear the input after submitting
+      // Find the "Requested" status
+      final requestedStatus = statuses
+          .firstWhere((status) => status['title'].toLowerCase() == 'requested');
+      // Add the new task to the "Requested" status
+      requestedStatus['tasks'].add(newTask);
     });
   }
 
-  void voteTask(int taskId) {
-    // Increment vote count for the task (this should be updated with your actual logic)
-    setState(() {
-      final task =
-          tasksForSelectedTab.firstWhere((task) => task['id'] == taskId);
-      task['votes'] = (task['votes'] ?? 0) + 1;
-    });
+  void _showFeatureSuggestionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return SuggestionModal(
+          titleController: titleController,
+          descriptionController: descriptionController,
+          projectService: projectService,
+          onTaskCreated: handleNewTaskSubmission, // Callback to update UI
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ToggleButtons(
-              isSelected: [
-                selectedTab == "Requested",
-                selectedTab == "Active",
-                selectedTab == "Done",
-              ],
-              onPressed: (int index) {
-                handleTabChanged(index);
-              },
-              borderRadius: BorderRadius.circular(8.0),
-              fillColor: Colors.blueAccent,
-              selectedColor: Colors.white,
-              color: Colors.black,
-              constraints: BoxConstraints(
-                minHeight: 40.0,
-                minWidth: MediaQuery.of(context).size.width / 3.5,
-              ),
-              children: const [
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text("Requested"),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text("Active"),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text("Done"),
-                ),
-              ],
+      child: Scaffold(
+        body: Column(
+          children: [
+            StatusToggleButtons(
+              selectedIndex: selectedTab == "Requested"
+                  ? 0
+                  : selectedTab == "Active"
+                      ? 1
+                      : 2,
+              onTabChanged: handleTabChanged,
             ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: tasksForSelectedTab.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: tasksForSelectedTab.length,
-                    itemBuilder: (context, index) {
-                      final task = tasksForSelectedTab[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5.0, horizontal: 10.0),
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(8.0),
+            const SizedBox(height: 20),
+            Expanded(
+              child: tasksForSelectedTab.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: tasksForSelectedTab.length,
+                      itemBuilder: (context, index) {
+                        final task = tasksForSelectedTab[index];
+                        final commentCount = task['comments']?.length ?? 0;
+                        final commentsVisible =
+                            showComments[task['id']] == true;
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 5.0, horizontal: 10.0),
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  UpvoteButton(
+                                    voteCount: task['votes'] ?? 0,
+                                    onUpvote: () {
+                                      voteTask(task['id']);
+                                    },
                                   ),
-                                  child: Column(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.arrow_upward),
-                                        color: Colors.blueAccent,
-                                        onPressed: () {
-                                          voteTask(task['id']);
-                                        },
-                                      ),
-                                      Text(
-                                        '${task['votes'] ?? 0}',
-                                        style: const TextStyle(fontSize: 16.0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        task['title'],
-                                        style: const TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 10.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          task['title'],
+                                          style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4.0),
-                                      Text(
-                                        task['description'] ?? '',
-                                        style: const TextStyle(fontSize: 14.0),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 4.0),
+                                        Text(
+                                          task['description'] ?? '',
+                                          style:
+                                              const TextStyle(fontSize: 14.0),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () =>
+                                              toggleComments(task['id']),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                (commentsVisible
+                                                        ? 'Hide Comments'
+                                                        : 'Show Comments') +
+                                                    ' (${commentCount})',
+                                                style: const TextStyle(
+                                                  fontSize: 14.0,
+                                                  color: Colors.blueAccent,
+                                                ),
+                                              ),
+                                              Icon(
+                                                commentsVisible
+                                                    ? Icons.expand_less
+                                                    : Icons.expand_more,
+                                                color: Colors.blueAccent,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: Icon(showComments[task['id']] == true
-                                      ? Icons.expand_less
-                                      : Icons.expand_more),
-                                  onPressed: () => toggleComments(task['id']),
+                                ],
+                              ),
+                              const SizedBox(height: 4.0),
+                              if (commentsVisible) ...[
+                                CommentsSection(
+                                  comments: task['comments'] ?? [],
+                                  onCommentChange: handleCommentChange,
+                                  onSubmitComment: () =>
+                                      handleSubmitNewComment(task['id']),
+                                  commentContent: commentContent,
+                                  onUpvoteComment: handleUpvoteComment,
                                 ),
                               ],
-                            ),
-                            if (showComments[task['id']] == true) ...[
-                              const Divider(),
-                              Column(
-                                children: task['comments']
-                                        ?.map<Widget>(
-                                          (comment) => ListTile(
-                                            title: Text(comment['content']),
-                                          ),
-                                        )
-                                        .toList() ??
-                                    [],
-                              ),
-                              const Divider(),
-                              TextField(
-                                onChanged: handleCommentChange,
-                                decoration: InputDecoration(
-                                  hintText: 'Add a comment',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
-                                controller:
-                                    TextEditingController(text: commentContent),
-                              ),
-                              const SizedBox(height: 8.0),
-                              ElevatedButton(
-                                onPressed: () => submitNewComment(task['id']),
-                                child: const Text('Post'),
-                              ),
-                            ]
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showFeatureSuggestionModal(context),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
           ),
-        ],
+          backgroundColor: Colors.blueAccent,
+        ),
       ),
     );
   }
