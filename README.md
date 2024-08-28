@@ -1,4 +1,4 @@
-# kanbancast-flutter
+# kanbancast_components
 
 Flutter library for the Kanbancast component.
 
@@ -12,15 +12,26 @@ Follow these steps to integrate the Kanbancast component into your Flutter proje
    - Create a project on [Kanbancast.com](https://kanbancast.com)
    - Obtain the project API key from your project settings
 
-2. Add the kanbancast-flutter package to your `pubspec.yaml`:
+2. Add the kanbancast_components package to your project:
+
+   With Flutter:
+
+   ```
+   $ flutter pub add kanbancast_components
+   ```
+
+   This will add a line like this to your package's pubspec.yaml (and run an implicit flutter pub get):
+
    ```yaml
    dependencies:
-     kanbancast_flutter: ^1.0.0
+     kanbancast_components: ^0.0.1
    ```
+
+   Alternatively, your editor might support flutter pub get. Check the docs for your editor to learn more.
 
 3. Import the package in your Dart code:
    ```dart
-   import 'package:kanbancast_flutter/kanbancast_components.dart';
+   import 'package:kanbancast_components/kanbancast_components.dart';
    ```
 
 4. Use the BoardView component in your widget tree:
@@ -34,4 +45,16 @@ Follow these steps to integrate the Kanbancast component into your Flutter proje
 
 ## Example
 
-An example is also present in the `/example` directory:
+An example is available in the `/example` directory of the package repository.
+
+## Changelog
+
+For a detailed changelog, see the [CHANGELOG.md](CHANGELOG.md) file.
+
+## Versions
+
+For information about the latest and previous versions, visit the [package page on pub.dev](https://pub.dev/packages/kanbancast_components).
+
+## Scores
+
+For package scores and additional information, check the [pub.dev score page](https://pub.dev/packages/kanbancast_components/score).
