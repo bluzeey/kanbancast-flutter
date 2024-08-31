@@ -47,6 +47,10 @@ Follow these steps to integrate the Kanbancast component into your Flutter proje
 
 An example is available in the `/example` directory of the package repository.
 
+## Tutorial
+For a step-by-step tutorial on integrating the Kanbancast component in Flutter, visit our [Flutter Integration Tutorial](https://kanbancast.com/integrations/flutter).
+
+
 ## Changelog
 
 For a detailed changelog, see the [CHANGELOG.md](CHANGELOG.md) file.
